@@ -1,17 +1,4 @@
-//元数据
-//string
-//num
-//date
-//任意型
-//T
-//集合
-//	List<T> 泛型list
-//  List<?> 不固定list
-
- 
-//string,num,date 类型处理
-//fun , gen处理
-// list<T>  listT , listTRow ,listTEach
+//可视化交互方案
 class plan {
 
 	static render(d, dp){
