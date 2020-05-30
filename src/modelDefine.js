@@ -6,7 +6,8 @@ pue.define('user',
 	fields:{
 		name:{
 			type:'string',
-			name:'名称'
+			name:'名称',
+			enum:['选项1','选项2','选项3']
 		},
 		pass:{
 			type:'string',

@@ -285,7 +285,30 @@ class plan {
                             '.for':k,
                             '.innerHtml':dp.fields[k].name
                         },
-                        input:{
+                        
+                    }
+
+                    if(dp.fields[k].enum){
+                        let input = {
+                            '-uiType':'select',
+                            //'.type':'text',
+                            '.class':'form-control',
+                            //'.placeholder':'',                        
+                            '-inBind':{
+                                dm:dmName,
+                                k:k
+                            }
+                        }
+                        for(let i in dp.fields[k].enum){
+                            input['o'+i] = {
+                                '-uiType':'option',
+                                '.innerHtml':dp.fields[k].enum[i]
+                            }
+                        }
+                        temp[k].input = input
+
+                    }else{
+                        temp[k].input = {
                             '-uiType':'input',
                             '.type':'text',
                             '.class':'form-control',
