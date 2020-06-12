@@ -1,4 +1,4 @@
-var pue = {
+ var pue = {
     dpMap:{},
     define(name,dt){
         this.dpMap[name] = dt
@@ -9,7 +9,7 @@ class dataModel{
     static new(mdName,param){
         let data =  param;
         if(pue.dpMap[mdName]&& pue.dpMap[mdName].init){
-            data = pue.dpMap[mdName].init()
+            data = pue.dpMap[mdName].init(param)
         }
         dmBindMap.set(data,mdName)
         return data
@@ -116,6 +116,7 @@ class plan {
                 
                 case 'string':
                     // 字符串类型处理
+                    //console.log('string')
                     memberTemp = this.stringRender(data[key],fields[key])                    
                     
                     break;
@@ -127,6 +128,11 @@ class plan {
                 case 'date':
                     // 日期类型处理
                     memberTemp = this.dateRender(data[key],fields[key])
+                    
+                    break;
+                case 'datetime':
+                    // 日期类型处理
+                    memberTemp = this.datetimeRender(data[key],fields[key])
                     
                     break;
                 case 'list':
@@ -177,8 +183,8 @@ class plan {
     static caseListT(data,dp){
         let temp = this.listTRender(data,dp)
         let rows = []
-        //console.log('data:')
-        //console.log(data.length)
+        // console.log('data:')
+        // console.log(data)
         for (let r in data) {
             //console.log('b:')
             
@@ -205,9 +211,41 @@ class plan {
 
     }
     static stringRender(value,dp){
+
+        //console.log(value)
+        if(value['-bind']){
+            //alert(111)
+            
+            //拷贝 带有格式化方法的绑定对象
+            const vb = Object.assign({}, value['-bind'])
+            //格式化展示数据 数据展示弹性布局
+            vb['-fmt'] = function (v) {
+                //alert(v)
+                //console.log(v)
+                if(v.length > 25){
+                    return v.substring(0,22) + '...'
+                }else{
+                    return v
+                }
+
+                //return new Date(v).toLocaleString()
+            }
+            //console.log(value)
+            //console.log('vb')
+            //console.log(vb)
+            return {
+                '-uiType':'span',
+                '.innerHtml':{'-bind':vb},
+                '.data-toggle':"tooltip",
+                '.title':value
+            }
+        }
+
         return {
             '-uiType':'span',
-            '.innerHtml':value
+            '.innerHtml':value,
+            '.data-toggle':"tooltip",
+            '.title':value
         }
     }
     static numberRender(value,dp){
@@ -217,6 +255,7 @@ class plan {
         }
     }
     static funContainerRender(input,dp,dpKey){
+        //console.log(dp)
         let temp = {
             '.class':'modal fade',
             '.id':dpKey,
@@ -255,13 +294,17 @@ class plan {
             }
 
         }
-
+        if(dp.role == 'big'){
+            
+            temp.modal['.class'] = 'modal-dialog modal-xl'
+            //alertalert(temp.modal)
+        }
         return temp
     }
     static funContactRender(method){
         let temp = {            
             '-uiType':'button',
-            '.class':'btn btn-default navbar-btn',
+            '.class':'btn btn-secondary',
             '@onclick':method,
             '.innerHtml':method.name            
         }
@@ -319,6 +362,13 @@ class plan {
                             }
                         }
                     }
+
+                    if(dp.fields[k].row){
+                        temp[k].input['-uiType'] = 'textarea'
+                        temp[k].input['.rows'] = ''+dp.fields[k].row
+                        //console.log(temp[k])
+                    }
+
                     break;            
                 case 'number':
                     temp[k] = {
@@ -360,6 +410,25 @@ class plan {
                         }
                     }
                     break;
+                case 'datetime':
+                    temp[k] = {
+                        '.class':'form-group',
+                        label:{
+                            '-uiType':'label',
+                            '.for':k,
+                            '.innerHtml':dp.fields[k].name
+                        },
+                        input:{
+                            '-uiType':'input',
+                            '.type':'datetime-local',
+                            '.class':'form-control',                           
+                            '-inBind':{
+                                dm:dmName,
+                                k:k
+                            }
+                        }
+                    }
+                    break;
                 default:
                     // statements_def
                     break;
@@ -369,7 +438,7 @@ class plan {
 
         temp.submit = {
             '-uiType':'button',
-            '.class':'btn btn-default',
+            '.class':'btn btn-secondary',
             '.innerHtml':'提交',
             '.type':'button',
             '@onclick':submit
@@ -387,11 +456,28 @@ class plan {
     static listMemberRender(){
 
     }
-    static dateRender(){
+    static dateRender(value,dp){
         return {
             '-uiType':'span',
             '.innerHtml':value
         }
+    }
+    static datetimeRender(value,dp){
+        //alert(value)
+        //  console.log('value')
+        //  console.log(value)
+        if(value['-bind']){
+            value['-bind']['-fmt'] = function (v) {
+                //alert(111)
+                return new Date(v).toLocaleString()
+            }
+        }
+        
+        return {
+            '-uiType':'span',
+            '.innerHtml':value
+        }
+        
     }
     static listRender(){
 
@@ -403,31 +489,55 @@ class plan {
                 toolbar:{
                     '.class':'row',
                     nav:{
-                        '.class':'navbar navbar-default',
+                        '.class':'navbar navbar-expand-lg navbar-light bg-light',
                         '.role':"navigation",
                         btns:{
-                            '.class':"container-fluid"
+                            '.class':"btn-toolbar",
+                            'role':"toolbar" ,
+                            'aria-label':"Toolbar with button groups"
                         }
                     }            
                 },
                 menber:{
                     '.class':'row',
-                    content:{
-                        '.class':'col-md-12'
+                    //<ul class="nav nav-tabs">
+                    nav:{
+                        '-uiType':'ul',
+                        '.class':'nav nav-tabs',
+                        'role':'tablist'
+                    },
+                    tab:{
+                        '.class':'tab-content'
+                        //<div id="myTabContent" class="tab-content">
+
                     }
 
                 }
             }
             //console.log('=================')
             //console.log(dp)
+            let a = ' show active'
             for (let key in fds) {
-                temp.menber.content[key]={
-                    label:{
-                        '-uiType':'label',
+                temp.menber.nav[key]={                    
+                    '-uiType':'li',
+                    '.class':'nav-item',
+                    [key]:{
+                        '-uiType':'a',
+                        //'.data-toggle':"tab",
+                        '.class':'nav-link active',
+                        '.href':'#tab-'+key,
                         '.innerHtml':dp.fields[key].name
-                    },
-                    value:fds[key]
+                    }                                                          
                 }
+
+                temp.menber.tab[key]={                   
+                    '.class':'tab-pane fade'+a,
+                    '.id':'tab-'+key,
+                    'role':'tabpanel',
+                    [key]:fds[key]                                                  
+                }
+                a = ''
+                //value:fds[key]
             }
 
             for (let key in funs) {
@@ -441,7 +551,7 @@ class plan {
         return function (rows){
             let temp = {
                 '-uiType':'table',
-                '.class':'table table-hover',
+                '.class':'table table-hover table-bordered',
                 head:{
                     '-uiType':'thead',
                     tr:{
@@ -480,8 +590,21 @@ class plan {
         }
         for (let k in dp.fields) {
             row[k] = {
-                '-uiType':'td',
-                '.innerHtml':t[k]
+                '-uiType':'td'               
+            }
+            switch (dp.fields[k].type) {
+                case 'datetime':
+                    row[k]['date'] = this.datetimeRender(t[k])
+                    break;
+
+                case 'string':
+                    row[k]['date'] = this.stringRender(t[k])
+                    break;
+            
+                default:
+                    
+                    row[k]['.innerHtml'] = t[k]
+                    break;
             }
         }
         row['op'] = {
@@ -533,19 +656,58 @@ var pui = {
 
         var abstractData = this.buildAbstractData(data)
 
-        console.log(data)
-        console.log('++++++++++++++')
-        console.log(abstractData)
+        // console.log(data)
+        // console.log('++++++++++++++')
+        // console.log(abstractData)
 
 
         let temp = plan.render(abstractData,dp)
-        console.log(temp)
+        //console.log(temp)
 
     },
+    formatData(data,dmName){ 
+        // console.log(data)
+        // console.log(dmName)      
+        switch (dmName) {
+            case 'datetime':
+                
+                if(data){
+                    return new Date(data).toISOString().replace('Z','')
+                }else{
+                    return null
+                }                              
+        
+            default:
+                let dm = pue.dpMap[dmName]
+                const listRegex = /list<.*>/;
+                if(dm){
+                    for (const k in dm.fields) {
+                        data[k] = this.formatData(data[k],dm.fields[k].type)
+                    }
+                }else if(dmName.match(listRegex) != null){
+                    let t = dmName.split(/<|>/)[1]
+                    let tdm = pue.dpMap[t]
+                    // console.log(t)
+                    // console.log(tdm)
+                    for (const r in data) {
+                       // console.log(data[r])
+                        for (const k in tdm.fields) {
+                            data[r][k] = this.formatData(data[r][k],tdm.fields[k].type)
+                        }
+                    }
+                }
+                break;
+        }
+        return data
+    },
     buildAbstractData(data,dmName){
+        // console.log('data/////////')
+        // console.log(data)
         let abstractData= {}
         for (let k in data) {
-            console.log(dmName)
+            // console.log('dmName')
+            // console.log(dmName)
+            // console.log(k)
             let dm = null //= pue.dpMap[dmName].fields[k].type
             if(pue.dpMap[dmName]){
                 dm = pue.dpMap[dmName].fields[k].type
@@ -600,36 +762,43 @@ var pui = {
             container = document.getElementById(containerId)
         }
         var dm = pue.dpMap[dmName]
-        var data = dm.methods.load();
+        let t = this
+        dm.methods.load().then(data => {
+            // console.log('data:===')
+            // console.log(data)
+            //data = this.formatData(data,dmName)
+            var abstractData = t.buildAbstractData(data,dmName)
+            // console.log('abstractData:')
+            // console.log(abstractData)
+    
+            // console.log('dataBindMap:')
+            // console.log(dataBindMap)
+            //dom 符号 (唯一标识符)
+            const symbol = Symbol(data)
+            //虚拟dom对象
+            
+            let virtualDom = plan.render(abstractData,dm)
+            if(interactPlan){
+                
+            }
+            
+            // console.log('virtualDom:')
+            // console.log(virtualDom)
+            
+            //构建dom对象实例
+            let realDom = t.buildDom(virtualDom) 
+            // console.log('realDom:')
+            // console.log(realDom)
+            //页面容器          
+            container.appendChild(realDom)
+            //realDomMap
+            t.realDomMap[symbol] = realDom
+            t.opData = data
+            t.plan = plan
+            t.virtualDomMap[symbol] = realDom
 
-        var abstractData = this.buildAbstractData(data,dmName)
-        // console.log('abstractData:')
-        // console.log(abstractData)
-
-        // console.log('dataBindMap:')
-        // console.log(dataBindMap)
-        //dom 符号 (唯一标识符)
-        const symbol = Symbol(data)
-        //虚拟dom对象
-        let virtualDom = plan.render(abstractData,dm)
-        if(interactPlan){
-
-        }
+        })
         
-        // console.log('virtualDom:')
-        // console.log(virtualDom)
-        
-        //构建dom对象实例
-        let realDom = this.buildDom(virtualDom) 
-        // console.log('realDom:')
-        // console.log(realDom)
-        //页面容器          
-        container.appendChild(realDom)
-        //realDomMap
-        this.realDomMap[symbol] = realDom
-        this.opData = data
-        this.plan = plan
-        this.virtualDomMap[symbol] = realDom
     },
     //虚拟dom实例化
     buildDom(virtualDom){
@@ -652,8 +821,8 @@ var pui = {
 
                     const symbol = Symbol('fun')
                     pui.dataMap[symbol] = virtualDom[key]['-b']
-                    console.log('方法识别:')
-                    console.log(virtualDom[key])
+                    // console.log('方法识别:')
+                    // console.log(virtualDom[key])
                     this.buildEvent(realDom,key.substr(1),virtualDom[key],symbol)
                     break;
                 case '-':
@@ -700,8 +869,8 @@ var pui = {
             set:function(newValue){
                 value = newValue
                 //setAttribute(realDom,key,newValue)
-                console.log('捕捉数据节点变化 :')
-                console.log(newValue)
+                // console.log('捕捉数据节点变化 :')
+                // console.log(newValue)
                 let ad = a.buildAbstractData(newValue,dm)
                 let vd
                 //根据数据类型采用不同的渲染器生成对应的虚拟dom
@@ -739,7 +908,7 @@ var pui = {
                 break;
             case 'object':
                 if(value['-bind']){
-                    this.bindAttribute(realDom,key,value['-bind'].obj,value['-bind'].key)
+                    this.bindAttribute(realDom,key,value['-bind'].obj,value['-bind'].key,value['-bind']['-fmt'])
                 }
                 break;
             case 'function':
@@ -759,8 +928,20 @@ var pui = {
             realDom.setAttribute(key, value)
         } 
     },
-    bindAttribute(realDom,key,obj,k){
-        this.setAttribute(realDom,key,obj[k])
+    bindAttribute(realDom,key,obj,k,fmt){
+        if(fmt){              
+            // console.log('fmt')
+            // console.log(fmt)
+        }else{
+           // console.log(fmt)
+            fmt = function(v){
+                return v
+            }
+            //alert(11111)
+        }
+        
+        this.setAttribute(realDom,key,fmt(obj[k]))
+        
         let setAttribute = this.setAttribute
         //console.log('===='+key)
         let value = obj[k]
@@ -775,7 +956,7 @@ var pui = {
             set:function(newValue){
                 value = newValue
                 //Reflect.set(obj, k,newValue)
-                setAttribute(realDom,key,newValue)
+                setAttribute(realDom,key,fmt(newValue))
                 //console.log('set :'+newValue)
             },
             enumerable:true,  //为 true  表示 该属性 可被枚举 
@@ -818,8 +999,8 @@ var pui = {
         }
     },
     bindNoParamGen(realDom,key,value,data){
-        console.log('构建无参Gen事件')
-        console.log(data)
+        // console.log('构建无参Gen事件')
+        // console.log(data)
         realDom[key] =  function(){            
             let result = value.fun(data)
 
@@ -847,8 +1028,8 @@ var pui = {
                         alert(awaitData.value)
                     }
                 }else{  
-                    console.log('awaitData:')
-                    console.log(awaitData.value)  
+                    // console.log('awaitData:')
+                    // console.log(awaitData.value)  
                     let awaitValue = awaitData.value
                     let param = pMap.inputValue[dm]   
                     for (i in param) {
@@ -890,8 +1071,8 @@ var pui = {
     },
     bindNoParamFun(realDom,key,value,data){
         //console.log('构建无参方法事件')
-        console.log('构建无参方法事件')
-        console.log(data)
+        // console.log('构建无参方法事件')
+        // console.log(data)
         realDom[key] =  function(){            
             let result = value.fun(data)
 
@@ -917,8 +1098,8 @@ var pui = {
             case 'inBind':
                 //参数入口数据双向绑定
                 // dom -> data
-                console.log('value-----')
-                console.log(value)
+                // console.log('value-----')
+                // console.log(value)
 
                 if(!pMap.inputValue[value.dm]){
                     pMap.inputValue[value.dm] = {}
@@ -926,7 +1107,7 @@ var pui = {
                 let k = value.k
                 let v //= obj[k]
                 realDom['oninput'] = function(){
-                    console.log('value: ====')
+                   // console.log('value: ====')
                     
                     pMap.inputValue[value.dm][k] = realDom.value
 
@@ -1090,7 +1271,7 @@ var pui = {
         const symbol = Symbol(obj);
         this.dataMap[symbol] = obj
        // console.log(obj[funName].prototype.toString())
-        console.log('打印:')
+       // console.log('打印:')
         //console.log(typeof Object.getPrototypeOf(obj[funName]))
         return obj[funName].bind(obj)
         // if(obj[funName].prototype == '[object Generator]'){
@@ -1119,13 +1300,13 @@ var pui = {
         //console.log(element)
         
 
-        console.log(Object.getOwnPropertyDescriptors(oldUiObj))
-        console.log(Object.getOwnPropertyDescriptors(uiObj))
+        // console.log(Object.getOwnPropertyDescriptors(oldUiObj))
+        // console.log(Object.getOwnPropertyDescriptors(uiObj))
         //如果虚拟dom存在变化则刷新ui界面 
         if(Object.getOwnPropertyDescriptors(oldUiObj) != Object.getOwnPropertyDescriptors(uiObj)){
-            console.log('刷新!')
+           // console.log('刷新!')
             let newElement = this.new(uiObj,null,uiSymbol)
-            console.log(newElement)
+           // console.log(newElement)
             let father = element.parentNode
             father.replaceChild(newElement,element);
             pui.uiMap[uiSymbol] = newElement
