@@ -16,7 +16,7 @@ pue.define('user',
 
 	},
 	methods:{
-		load(){
+		async load(){
 			var data = {
 				name:'pwy',
 				pass:'666666'
@@ -74,14 +74,14 @@ pue.define('user',
 pue.define('pageUser',
 {
 	fields:{
-		pageSize:{
-			type:'number',
-			name:'页面大小'
-		},
-		pageNo:{
-			type:'number',
-			name:'页数'
-		},
+		// pageSize:{
+		// 	type:'number',
+		// 	name:'页面大小'
+		// },
+		// pageNo:{
+		// 	type:'number',
+		// 	name:'页数'
+		// },
 		list:{
 			type:'list<user>',
 			name:'列表'
@@ -89,10 +89,10 @@ pue.define('pageUser',
 
 	},
 	methods:{
-		load(){
+		async load(){
 			var data = {
-				pageNo:1,
-				pageSize:20,
+				// pageNo:1,
+				// pageSize:20,
 				list:[{
 					name:'pwy',
 					pass:'666666'
