@@ -98,9 +98,7 @@ class plan {
         }
         return temp
     }
-
     static caseTuple(data,dp){
-
 
         let temp = this.tupleRender(dp)
 
@@ -112,8 +110,6 @@ class plan {
         //console.log(fields)
         let fds = {}
         let funs = {}
-
-        //根据字段类型进行渲染
         for (let key in fields) {
             let type = fields[key].type
             let memberTemp = {}
@@ -188,7 +184,7 @@ class plan {
 
         for (let key in methods) {
             const m = Object.assign({}, methods[key])
-            m['-b'] = dataBindMap.get(data)
+            m['-b'] = dataBindMap.get(data)//data['-b']
             //console.log(data)
             if(key != 'load'){
                 funs[key] = this.funContactRender(m)
@@ -365,12 +361,6 @@ class plan {
         }
         return temp
     }
-
-    /**
-     * 返回方法渲染json
-     * @param method
-     * @returns {{"@onclick": *, "-uiType": string, ".innerHtml": *, ".class": string}}
-     */
     static funContactRender(method){
         let temp = {
             '-uiType':'button',
@@ -585,12 +575,6 @@ class plan {
     static listRender(){
 
     }
-
-    /**
-     * 返回组装函数
-     * @param dp
-     * @returns {function(*, *): {toolbar: {nav: {".role": string, btns: {".class": string}, ".class": string}, ".class": string}, menber: {nav: {"-uiType": string, ".class": string}, tab: {".class": string}, ".class": string}, ".class": string}}
-     */
     static tupleRender(dp){
         return function (fds,funs) {
             let temp = {
@@ -611,38 +595,18 @@ class plan {
                     nav:{
                         '-uiType':'ul',
                         '.class':'nav nav-tabs',
-                        '.onclick':function (e,it,env) {
-                        console.log(it)
-
-                        console.log(" env test")
-                            env.hello = 99999
-                            //todo
-                            env.print(2333)
-                        },
                         // 'role':'tablist'
                     },
                     tab:{
                         '.class':'tab-content'
                         //<div id="myTabContent" class="tab-content">
 
-                    },
-                    env:{
-                        test:"233"
-                    }
-
-                },
-                env:{
-                    hello:"hello ok",
-                    print(it,env,param) {
-                        //alert(param)
-                        console.log(it)
-                        console.log(env)
-                        //console.log(param)
                     }
 
                 }
             }
-
+            //console.log('=================')
+            //console.log(dp)
             let a = ' in active'
             for (let key in fds) {
                 temp.menber.nav[key]={
@@ -734,15 +698,15 @@ class plan {
             }
             switch (dp.fields[k].type) {
                 case 'datetime':
-                    row[k]['data'] = this.datetimeRender(t[k])
+                    row[k]['date'] = this.datetimeRender(t[k])
                     break;
 
                 case 'string':
-                    row[k]['data'] = this.stringRender(t[k])
+                    row[k]['date'] = this.stringRender(t[k])
                     break;
 
                 case 'code':
-                    row[k]['data'] = this.stringRender(t[k])
+                    row[k]['date'] = this.stringRender(t[k])
                     break;
 
                 default:
@@ -860,7 +824,6 @@ var pui = {
             console.log(data)
             let dm = null //= pue.dpMap[dmName].fields[k].type
             console.log(pue.dpMap[dmName])
-            // 字段类型识别
             if(pue.dpMap[dmName]){
                 console.log(k)
                 dm = pue.dpMap[dmName].fields[k].type
@@ -937,12 +900,11 @@ var pui = {
 
             // console.log('virtualDom:')
             // console.log(virtualDom)
-            console.log('virtualDom:')
-            console.log(virtualDom)
+
             //构建dom对象实例
             let realDom = t.buildDom(virtualDom)
-            // console.log('virtualDom:')
-            // console.log(virtualDom)
+            // console.log('realDom:')
+            // console.log(realDom)
             //页面容器
             container.appendChild(realDom)
             //realDomMap
@@ -967,7 +929,7 @@ var pui = {
                     matchBrackets: true,
                     showCursorWhenSelecting: true,
                     theme: "monokai",
-                    tabSize: 2
+                    tabSize: 4
                 });
 
                 codeMap.push(ce)
@@ -975,82 +937,46 @@ var pui = {
         },1000)
 
     },
-    /**
-     * 构建dom
-     * @param virtualDom
-     * @returns {*}
-     */
+    //虚拟dom实例化
     buildDom(virtualDom){
-
-        let rd = {}
+        let realDom = {}
         //根据-uiType 设置节点类型 默认为div
         if(virtualDom['-uiType']){
-            rd = document.createElement(virtualDom['-uiType'])
+            realDom = document.createElement(virtualDom['-uiType'])
         }else{
-            rd = document.createElement('div')
+            realDom = document.createElement('div')
         }
-
-        const realDom = rd
-
-        //初始化env
-        if(!virtualDom['env']){
-            virtualDom['env'] = {}
-        }
-        virtualDom['it'] = realDom
-
 
         for (let key in virtualDom) {
-            if(key === 'env'){
-                this.buildEnv(virtualDom)
-            }else if(key === 'it'){
+            switch (key[0]) {
+                case '.':
+                    //构造节点属性
+                    this.buildAttribute(realDom,key.substr(1),virtualDom[key])
+                    break;
+                case '@':
+                    //构造结点事件
 
-            } else{
-                switch (key[0]) {
-                    case '.':
-                        //构造节点属性 方法
-                        this.buildAttribute(realDom,key.substr(1),virtualDom[key],virtualDom)
-                        break;
-                    case '@':
-                        //构造结点事件
+                    const symbol = Symbol('fun')
+                    pui.dataMap[symbol] = virtualDom[key]['-b']
+                    // console.log('方法识别:')
+                    // console.log(virtualDom[key])
+                    this.buildEvent(realDom,key.substr(1),virtualDom[key],symbol)
+                    break;
+                case '-':
+                    //构造额外操作
+                    this.buildOtherOp(realDom,key.substr(1),virtualDom[key])
+                    break;
 
-                        const symbol = Symbol('fun')
-                        pui.dataMap[symbol] = virtualDom[key]['-b']
+                default:
+                    //判定是否为字母开头
+                    var isLetter = /^[a-zA-Z]+$/.test(key[0])
+                    if(isLetter){
+                        //添加结点
+                        realDom.appendChild(this.buildDom(virtualDom[key]))
+                    }
+                    break;
 
-                        this.buildEvent(realDom,key.substr(1),virtualDom[key],symbol)
-                        break;
-                    case '-':
-                        //构造额外操作
-                        this.buildOtherOp(realDom,key.substr(1),virtualDom[key])
-                        break;
-
-                    default:
-                        //判定是否为字母开头
-                        const isLetter = /^[a-zA-Z]+$/.test(key[0]);
-                        if(isLetter){
-                            //添加结点
-                            const vc = virtualDom[key]
-
-                            // 环境数据构建
-                            if(vc['env']){
-                                for (let envKey in virtualDom['env']) {
-                                    if(!vc['env'][envKey]){
-                                        vc['env'][envKey] = virtualDom['env'][envKey]
-                                    }
-                                }
-                            }else{
-                                vc['env'] = virtualDom['env']
-                            }
-
-                            const child = this.buildDom(vc)
-                            realDom.appendChild(child)
-                            realDom["_"+key] = child
-
-                        }
-                        break;
-
-                }
             }
-
         }
 
         //自动刷新策略
@@ -1110,26 +1036,7 @@ var pui = {
             configurable:true //为true 标识该属性可被修改和删除
         })
     },
-    buildEnv(virtualDom){
-        const env = virtualDom['env']
-        env['it'] = virtualDom['it']
-        for (const eKey in env) {
-            if(typeof env[eKey] === 'function'){
-                const f = env[eKey]
-                const rd = {
-                    it:virtualDom['it']
-                }
-
-                //todo
-                const nf = () => {
-                    //console.log(arguments[0])
-                    f(env['it'],env)
-                }
-                env[eKey] = nf
-            }
-        }
-    },
-    buildAttribute(realDom,key,value,virtualDom){
+    buildAttribute(realDom,key,value){
         //console.log(key + '      '+value)
         switch (typeof value) {
             case 'string':
@@ -1142,13 +1049,6 @@ var pui = {
                 }
                 break;
             case 'function':
-                const env = virtualDom['env']
-                // 私有方法渲染
-                realDom[key] = function(e){
-                    //console.error(realDom)
-                    value(e,realDom,env)
-                }
-
                 break;
             default:
                 break;
@@ -1218,7 +1118,6 @@ var pui = {
                 }
                 break;
             default:
-
                 break;
         }
     },
