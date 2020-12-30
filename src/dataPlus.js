@@ -819,13 +819,13 @@ var pui = {
         // console.log(data)
         let abstractData= {}
         for (let k in data) {
-            console.log('dmName')
-            console.log(dmName)
-            console.log(data)
+            // console.log('dmName')
+            // console.log(dmName)
+            // console.log(data)
             let dm = null //= pue.dpMap[dmName].fields[k].type
-            console.log(pue.dpMap[dmName])
+           // console.log(pue.dpMap[dmName])
             if(pue.dpMap[dmName]){
-                console.log(k)
+            //    console.log(k)
                 dm = pue.dpMap[dmName].fields[k].type
             }
             if(typeof data[k] == 'object'){
@@ -884,8 +884,8 @@ var pui = {
             // console.log(data)
             //data = this.formatData(data,dmName)
             const abstractData = t.buildAbstractData(data, dmName);
-            console.log('abstractData:')
-            console.log(abstractData)
+            // console.log('abstractData:')
+            // console.log(abstractData)
 
             // console.log('dataBindMap:')
             // console.log(dataBindMap)
@@ -916,10 +916,10 @@ var pui = {
         })
 
         setTimeout(function () {
-            console.log("codeInput:")
+           // console.log("codeInput:")
             const codes = document.getElementsByName("code")
             for (const codeInput of codes) {
-                console.log("codeInput")
+              //  console.log("codeInput")
                 const ce = CodeMirror.fromTextArea(codeInput, {
                     value: "",
                     lineNumbers: false,
@@ -996,18 +996,22 @@ var pui = {
         let dm = path.dm
         let value = obj[key]
         let a = this
+        //todo
         //let buildAbstractData = this.buildAbstractData
-
+        console.log('监听数据节点:  ')
+        console.log(path)
+        console.log(obj)
+        console.log(key)
         Object.defineProperty(obj,key,{
             get:function(){
-                //console.log('取值:  '+value)
+                //onsole.log('捕捉数据节点变化:  '+value)
                 return value
             },
             set:function(newValue){
                 value = newValue
                 //setAttribute(realDom,key,newValue)
-                // console.log('捕捉数据节点变化 :')
-                // console.log(newValue)
+                console.log('捕捉数据节点变化 :')
+                console.log(newValue)
                 let ad = a.buildAbstractData(newValue,dm)
                 let vd
                 //根据数据类型采用不同的渲染器生成对应的虚拟dom
@@ -1055,8 +1059,10 @@ var pui = {
         }
     },
     setAttribute(realDom,key,value){
-
-        if (key == 'innerHtml') {
+        console.log(" ==== realDom")
+        console.log(key)
+        console.log(value)
+        if (key === 'innerHtml') {
 
             realDom.innerHTML = value;
         }else{
@@ -1093,8 +1099,8 @@ var pui = {
             set:function(newValue){
                 value = newValue
                 //Reflect.set(obj, k,newValue)
-                setAttribute(realDom,key,fmt(newValue))
-                //console.log('set :'+newValue)
+                setAttribute(realDom,"innerHtml",fmt(newValue))
+                console.log('setValue :'+newValue)
             },
             enumerable:true,  //为 true  表示 该属性 可被枚举
             configurable:true //为true 标识该属性可被修改和删除
@@ -1190,16 +1196,17 @@ var pui = {
         }
     },
     bindParamFun(realDom,key,value,data){
-        //console.log('构建有参方法事件:')
-        //console.log(value)
+        // console.log('构建有参方法事件:')
+        // console.log(value)
+        // console.log(data)
         realDom[key] =  function(){
             //1 绑定参数入口函数
 
             // 设置当前操作的数据
             pMap.inputData[value.paramType] = data
             //弹出参数入口
-            //console.log(value)
-            //console.log(pMap)
+            // console.log(value)
+            // console.log(data)
             pMap.inputShow[value.paramType]()
             //绑定提交事件
             pMap.inputFun[value.paramType] = value.fun
@@ -1245,7 +1252,9 @@ var pui = {
                 let v //= obj[k]
                 realDom['oninput'] = function(){
                     // console.log('value: ====')
-
+                    // console.log(realDom.value)
+                    // console.log(value)
+                    // console.log(k)
                     pMap.inputValue[value.dm][k] = realDom.value
 
                     //console.log(pMap.inputValue[value.dm])
@@ -1253,13 +1262,15 @@ var pui = {
                 //data -> dom
                 Object.defineProperty(pMap.inputValue[value.dm],k,{
                     get:function(){
-                        //console.log('取值:  '+value)
+                        // console.log('取值:  '+v)
+                        // console.log(v)
                         return v
                     },
                     set:function(newValue){
+                        //console.log('set :'+newValue)
                         v = newValue
                         realDom.value = newValue
-                        //console.log('set :'+newValue)
+
                     },
                     enumerable:true,  //为 true  表示 该属性 可被枚举
                     configurable:true //为true 标识该属性可被修改和删除
@@ -1281,8 +1292,9 @@ var pui = {
             let opData = pMap.inputData[value['-pm']]
             //2 触发绑定事件
             // console.log('当前操作数据')
-            // console.log(data2.name)
-            // console.log(data2.pass)
+            // console.log(value['-pm'])
+            // console.log(pMap.inputData)
+           // alert(1111)
             let result = pMap.inputFun[value['-pm']](opData,param)
             if(result){
                 alert(result)
@@ -1363,7 +1375,7 @@ var pui = {
                                 }
                             }else{
                                 element[key] =  function(){
-                                    // console.log('调用方法:'+funName)
+                                    console.log('调用方法:'+funName)
                                     //console.log(pui.data[symbol])
                                     pui.dataMap[symbol][funName]()
                                     // console.log(pui.dataMap[symbol][key])

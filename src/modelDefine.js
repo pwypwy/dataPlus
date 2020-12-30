@@ -7,7 +7,7 @@ pue.define('user',
 		name:{
 			type:'string',
 			name:'名称',
-			enum:['选项1','选项2','选项3']
+			// enum:['选项1','选项2','选项3']
 		},
 		pass:{
 			type:'string',
@@ -30,8 +30,9 @@ pue.define('user',
 			fun(data,param){
 				//data.name = param.name
 				//data.pass = param.pass
-				console.log('param:')
+				console.log('param22:')
 				console.log(param)
+				console.log(data)
 				///console.log(data)
 				data.name = param.name
 				data.pass = param.pass
